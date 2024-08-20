@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35208.52
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SurfaceScan", "SurfaceScan.csproj", "{1364046C-31D8-4579-8405-B0562B35B7A4}"
 EndProject
 Global
@@ -12,5 +15,11 @@ Global
 		{1364046C-31D8-4579-8405-B0562B35B7A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1364046C-31D8-4579-8405-B0562B35B7A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1364046C-31D8-4579-8405-B0562B35B7A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D648DC98-E047-4588-9EA7-C130D018F527}
 	EndGlobalSection
 EndGlobal

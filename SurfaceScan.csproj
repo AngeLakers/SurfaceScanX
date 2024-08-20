@@ -10,16 +10,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Update="thridpart\LTDMC\LTDMC.dll">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="thridpart\PCI9850\PCI9850.dll">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="CppSharp" Version="1.1.5.3168" />
-    </ItemGroup>
+	</ItemGroup>
+
+	<Target Name="ThirdPart" BeforeTargets="PrepareForBuild">
+		<ItemGroup>
+			<LTDMC Include="thirdpart\LTDMC\*.dll"></LTDMC>
+			<PCI9850 Include="thirdpart\PCI9850\*.dll"></PCI9850>
+		</ItemGroup>
+		<Copy SourceFiles="@(LTDMC)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="True"></Copy>
+		<Copy SourceFiles="@(PCI9850)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="True"></Copy>
+	</Target>
 
 </Project>

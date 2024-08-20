@@ -18,4 +18,8 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="CppSharp" Version="1.1.5.3168" />
+    </ItemGroup>
+
 </Project>

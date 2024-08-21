@@ -11,7 +11,13 @@
 
     <ItemGroup>
       <PackageReference Include="CppSharp" Version="1.1.5.3168" />
+      <PackageReference Include="Emgu.CV" Version="4.9.0.5494" />
+      <PackageReference Include="HandyControl" Version="3.5.1" />
 	</ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Resources\" />
+    </ItemGroup>
 
 	<Target Name="ThirdPart" BeforeTargets="PrepareForBuild">
 		<ItemGroup>

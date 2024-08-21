@@ -1,4 +1,4 @@
-# 项目名称
+# SurfaceScan
 
 简要描述项目的目的或功能，解决的问题以及主要的技术特点。
 
@@ -25,8 +25,8 @@
 
 - **语言**：C#
 - **框架**：WPF (.NET Framework/.NET Core)
-- **UI 库**：（Material Design in XAML, MahApps.Metro, HandyControl 等）
-- **包管理**：NuGet
+- **UI 库**： HandyControl
+- **包管理**：NuGet 
 
 ## 安装与运行
 

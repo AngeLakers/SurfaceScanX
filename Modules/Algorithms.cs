@@ -11,7 +11,10 @@ public class Algorithms
         predictedY.Clear();
         int n = inputPoints.Count;
         if (n < 3)
-            return;
+        {
+            throw new ArgumentException("The number of input points is less than 3.");
+        }
+            
 
         // 初始化矩阵
         Matrix<double> a = new Matrix<double>(n - 1, 1);
@@ -86,31 +89,12 @@ public class Algorithms
                                   b[j, 0] * (x - 1 - x_j) +
                                   c[j, 0] * Math.Pow(x - 1 - x_j, 2) +
                                   d[j, 0] * Math.Pow(x - 1 - x_j, 3);
-                normal[i] = middleV - middleV_; // 直接使用索引赋值
+                normal[i] = middleV - middleV_; // 直接使用索引赋值 不晓得这里要不要请0
             }
         });
     }
 
     // 辅助函数：找到点 x 所在的区间
-    private static int FindInterval(List<Point> inputPoints, double x, int n)
-    {
-        int j = 0;
-        for (int ii = 0; ii <= n - 2; ii++)
-        {
-            if (x >= inputPoints[ii].X && x < inputPoints[ii + 1].X)
-            {
-                j = ii;
-                break;
-            }
-
-            if (x >= inputPoints[n - 1].X)
-            {
-                j = n - 2;
-            }
-        }
-
-        return j;
-    }
     
     // 二分查找替代线性查找
     private static int BinarySearch(List<Point> points, double x, int n)

@@ -1,0 +1,82 @@
+﻿<UserControl x:Class="SurfaceScan.AxisController"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:local="clr-namespace:SurfaceScan"
+             mc:Ignorable="d"
+             d:DesignHeight="420" d:DesignWidth="800">
+   
+       
+            <Grid>
+        <!-- XYZ 轴组 -->
+        <GroupBox Header="XYZ Axes" Margin="10" VerticalAlignment="Top" Height="150">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="X:" VerticalAlignment="Center" Width="30"/>
+                    <Slider x:Name="sliderX" Minimum="-100" Maximum="100" ValueChanged="Slider_ValueChanged" Width="200"/>
+                    <TextBox x:Name="txtXValue" IsReadOnly="True" Width="60" Text="{Binding ElementName=sliderX, Path=Value, StringFormat={}{0:F2}}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="Y:" VerticalAlignment="Center" Width="30"/>
+                    <Slider x:Name="sliderY" Minimum="-100" Maximum="100" ValueChanged="Slider_ValueChanged" Width="200"/>
+                    <TextBox x:Name="txtYValue" IsReadOnly="True" Width="60" Text="{Binding ElementName=sliderY, Path=Value, StringFormat={}{0:F2}}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="Z:" VerticalAlignment="Center" Width="30"/>
+                    <Slider x:Name="sliderZ" Minimum="-100" Maximum="100" ValueChanged="Slider_ValueChanged" Width="200"/>
+                    <TextBox x:Name="txtZValue" IsReadOnly="True" Width="60" Text="{Binding ElementName=sliderZ, Path=Value, StringFormat={}{0:F2}}"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- AB 轴组 -->
+        <GroupBox Header="AB Axes" Margin="10" VerticalAlignment="Bottom" Height="100">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="A:" VerticalAlignment="Center" Width="30"/>
+                    <Slider x:Name="sliderA" Minimum="-100" Maximum="100" ValueChanged="Slider_ValueChanged" Width="200"/>
+                    <TextBox x:Name="txtAValue" IsReadOnly="True" Width="60" Text="{Binding ElementName=sliderA, Path=Value, StringFormat={}{0:F2}}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="B:" VerticalAlignment="Center" Width="30"/>
+                    <Slider x:Name="sliderB" Minimum="-100" Maximum="100" ValueChanged="Slider_ValueChanged" Width="200"/>
+                    <TextBox x:Name="txtBValue" IsReadOnly="True" Width="60" Text="{Binding ElementName=sliderB, Path=Value, StringFormat={}{0:F2}}"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- W 轴组 -->
+        <GroupBox Header="W Axis" Margin="10" VerticalAlignment="Bottom" Height="80">
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <TextBlock Text="W:" VerticalAlignment="Center" Width="30"/>
+                <Slider x:Name="sliderW" Minimum="-100" Maximum="100" ValueChanged="Slider_ValueChanged" Width="200"/>
+                <TextBox x:Name="txtWValue" IsReadOnly="True" Width="60" Text="{Binding ElementName=sliderW, Path=Value, StringFormat={}{0:F2}}"/>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- 显示所有轴数值 -->
+        <GroupBox Header="All Axis Values" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10" Width="200">
+            <StackPanel>
+                <TextBlock Text="X: " />
+                <TextBlock x:Name="txtAllX" Text="{Binding ElementName=sliderX, Path=Value, StringFormat={}{0:F2}}"/>
+                <TextBlock Text="Y: " />
+                <TextBlock x:Name="txtAllY" Text="{Binding ElementName=sliderY, Path=Value, StringFormat={}{0:F2}}"/>
+                <TextBlock Text="Z: " />
+                <TextBlock x:Name="txtAllZ" Text="{Binding ElementName=sliderZ, Path=Value, StringFormat={}{0:F2}}"/>
+                <TextBlock Text="A: " />
+                <TextBlock x:Name="txtAllA" Text="{Binding ElementName=sliderA, Path=Value, StringFormat={}{0:F2}}"/>
+                <TextBlock Text="B: " />
+                <TextBlock x:Name="txtAllB" Text="{Binding ElementName=sliderB, Path=Value, StringFormat={}{0:F2}}"/>
+                <TextBlock Text="W: " />
+                <TextBlock x:Name="txtAllW" Text="{Binding ElementName=sliderW, Path=Value, StringFormat={}{0:F2}}"/>
+            </StackPanel>
+        </GroupBox>
+   
+        </Grid>
+    
+</UserControl>

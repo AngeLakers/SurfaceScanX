@@ -1,48 +1,47 @@
-﻿namespace SurfaceScan.Modules.MotionControl;
+﻿using csLTDMC;
 
-using LTDMC;
+namespace SurfaceScan.Modules.MotionControl;
 
 public class Axis : Base
 {
     public void EnableAllAxes()
     {
-        // 开启所有轴
-        MotionControl.TotalAxis = GetTotalAxis();
         for (int i = 0; i < MotionControl.TotalAxis; i++)
         {
-            LTDMC.__Internal.nmc_set_axis_enable(0, (ushort)i);
-            LTDMC.__Internal.dmc_set_equiv(0, (ushort)i, 1);
+            LTDMC.nmc_set_axis_enable(0, decimal.ToUInt16(i));
         }
 
-        LTDMC.__Internal.dmc_set_equiv(0, 2, 10);
-        LTDMC.__Internal.dmc_set_equiv(0, 5, 10);
-        //位置获取，position 需要在其他类中实现
+        Helper.SetEquiv();   
+
+        Helper.GetPosition(MotionControl.AxisPositon);
     }
 
     public void DisableAllAxes()
     {
         for (int i = 0; i < MotionControl.TotalAxis; i++)
         {
-            LTDMC.__Internal.nmc_set_axis_disable(0, (ushort)i);
+            LTDMC.nmc_set_axis_disable(0, decimal.ToUInt16(i));
         }
-        // axis_disable implementation
+
+        // 更新位置
+        Helper.GetPosition(MotionControl.AxisPositon);
     }
 
-    public void ResetAxis()
+    public void ResetAxis(int axis)
     {
-        LTDMC.__Internal.dmc_set_position_unit(0, 3, 0);
-
+        // 可自定义reset哪个轴
+        LTDMC.dmc_set_position_unit(0, decimal.ToUInt16(axis), 0);
 
         // axis_reset implementation
     }
 
     public void ResetAllAxes()
     {
+        // 清零位置
         for (int i = 0; i < MotionControl.TotalAxis; i++)
         {
-            LTDMC.__Internal.dmc_set_position_unit(0, (ushort)i,0);
+            LTDMC.dmc_set_position_unit(MotionControl.CardNo, decimal.ToUInt16(i), 0);
         }
-        // axis_reset_all implementation
     }
 
     public void MoveAxis(int axis, int dir, double speed, double length)
@@ -52,6 +51,17 @@ public class Axis : Base
 
     public void StopAllAxes()
     {
-        // axis_stop implementation
+        // 并行化下停止所有轴
+        
+        for (int i = 0; i < MotionControl.TotalAxis; i++)
+        {
+            LTDMC.dmc_stop(MotionControl.CardNo, decimal.ToUInt16(i), 0);
+        }
+        
     }
+    
+    
+    
+
+    
 }

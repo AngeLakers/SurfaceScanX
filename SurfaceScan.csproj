@@ -15,10 +15,6 @@
       <PackageReference Include="HandyControl" Version="3.5.1" />
 	</ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Resources\" />
-    </ItemGroup>
-
 	<Target Name="ThirdPart" BeforeTargets="PrepareForBuild">
 		<ItemGroup>
 			<LTDMC Include="thirdpart\LTDMC\*.dll"></LTDMC>

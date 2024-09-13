@@ -1,19 +1,19 @@
 ﻿namespace SurfaceScan.Resources.Properties;
 
-public enum Direction
+public enum Direction:int
 {
     Forward = 0,
     Reverse = 1
 }
 
-public enum PositionMode
+public enum PositionMode:int
 {
     Relative = 0,
     Absolute = 1
 }
 
 
-public enum Axis
+public enum Axis:int
 {
     X = 0,
     Y = 1,

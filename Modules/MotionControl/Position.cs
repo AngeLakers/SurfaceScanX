@@ -1,4 +1,6 @@
-﻿namespace SurfaceScan.Modules.MotionControl;
+﻿using SurfaceScan.Resources.Properties;
+
+namespace SurfaceScan.Modules.MotionControl;
 
 using csLTDMC;
 using Resources;
@@ -9,47 +11,130 @@ public class Position
     //len = 5e4,
 {
     // 常量定义
-    const double DEGREE_CONVERSION = Base.PI * 2 / 360000; // 36e4 用作将编码器单位转换为弧度
-    const double ACCELERATION = 0.1; // 加速时间
-    const double DECELERATION = 0.1; // 减速时间
-
-    const double SMOOTHING_RATIO = 0.2; // 运动平滑比率
-
+    const double DegreeConversion = Base.PI * 2 / 360000; // 36e4 用作将编码器单位转换为弧度
+    const double Acceleration = 0.1; // 加速时间
+    const double Deceleration = 0.1; // 减速时间
+    const double SmoothingRatio = 0.2; // 运动平滑比率
     private const double MoveRadius = 102500;
 
-    //double probe_deg = paras[9] / 2 * PI * 2 / 36e4;
+    //double probeDeg = paras[9] / 2 * PI * 2 / 36e4;
     //探头角度计算，具体怎么算不懂。
-    public static void BackToOrigin()
+    public void BackOrigin(ushort myCardNo, ushort myMode)
     {
-        // 读取初始位置(0,0,0,0,0)
-        short sRtn = 0;
-        ushort statemachine = 0;
+        ushort[] myAxes = new ushort[6] { 0, 1, 2, 3, 4, 5 };
+        ushort[] states = new ushort[6];
+        ushort[] statemachines = new ushort[6];
 
-        // for (int i = 0; i < MotionControl.TotalAxis; i++)
-        // {
-        //     LTDMC.nmc_get_axis_state_machine(MotionControl.CardNo, decimal.ToUInt16(i), ref statemachine); //获取轴状态机
-        //     if (statemachine == 4) //监控轴状态机的值，该值等于4 表示轴状态机处于准备好状态
-        //     {
-        //         // 速度 和 mode 可以自定义或者需要调整
-        //         LTDMC.nmc_set_home_profile(MotionControl.CardNo, decimal.ToUInt16(i), 33, 2000, 4000, 0.1, 0.1, 0);
-        //         //设置回原点模式,设置0 号轴梯形速度曲线参数
-        //         LTDMC.nmc_home_move(MyCardNo, Myaxis); //执行回原点运动
-        //         while (LTDMC.dmc_check_done(MyCardNo, Myaxis) == 0) // 判断轴运动状态，等待回零运动完成
-        //         {
-        //             Application.DoEvents();
-        //         }
-        //
-        //         LTDMC.dmc_get_home_result(MyCardNo, Myaxis, ref state); //判断回零是否正常完成。
-        //         if (state == 1) //回零正常完成
-        //         {
-        //             MessageBox.Show("回零完成");
-        //         }
-        //     }
-        // }
+        // 定义速度参数，假设这些值都是固定的
+        double startVelocity = 1000; // 起始速度
+        double runVelocity = 5000;   // 运行速度
+        double acceleration = 0.1;   // 加速度
+        double deceleration = 0.1;   // 减速度
+
+        for (int i = 0; i < 6; i++)
+        {
+            ushort axis = myAxes[i];
+
+            // 获取轴状态机
+            LTDMC.nmc_get_axis_state_machine(myCardNo, axis, ref statemachines[i]);
+
+            if (statemachines[i] == 4) // 轴状态机准备好
+            {
+                // 设置速度曲线参数，参考 dmc_set_profile_unit 的方式
+      
+
+                // 设置回原点模式，设置该轴的速度曲线参数
+                LTDMC.nmc_set_home_profile(myCardNo, axis, myMode, startVelocity, runVelocity, acceleration, deceleration, 0);
+
+                // 执行回零运动
+                LTDMC.nmc_home_move(myCardNo, axis);
+
+                // // 等待回零运动完成
+                // while (LTDMC.dmc_check_done(MyCardNo, axis) == 0)
+                // {
+                // }
+
+                // 判断回零是否正常完成
+                LTDMC.dmc_get_home_result(myCardNo, axis, ref states[i]);
+                if (states[i] == 1)
+                {
+                    Console.WriteLine($"轴 {axis} 回零完成");
+                }
+                else
+                {
+                    Console.WriteLine($"轴 {axis} 回零失败");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"轴 {axis} 未处于准备好状态，状态机值: {statemachines[i]}");
+            }
+        }
+
+   
+    }
+    
+    public void ControlAxes(ushort MyCardNo, ushort Mymode)
+    {
+        ushort[] myAxes = new ushort[6] { 0, 1, 2, 3, 4, 5 };
+        ushort[] states = new ushort[6];
+        ushort[] stateMachines = new ushort[6];
+        Thread[] axisThreads = new Thread[6];
+
+        for (int i = 0; i < 6; i++)
+        {
+            int axisIndex = i; // Local copy for thread safety
+            axisThreads[i] = new Thread(() => ControlAxis(MyCardNo, myAxes[axisIndex], Mymode, ref stateMachines[axisIndex], ref states[axisIndex]));
+            axisThreads[i].Start();
+        }
+
+        // Wait for all threads to finish
+        foreach (Thread t in axisThreads)
+        {
+            t.Join();
+        }
+
+        // Check if all axes are in the ready state
+    }
+
+    private void ControlAxis(ushort MyCardNo, ushort axis, ushort Mymode, ref ushort statemachine, ref ushort state)
+    {
+        // 获取轴状态机
+        LTDMC.nmc_get_axis_state_machine(MyCardNo, axis, ref statemachine);
+
+        if (statemachine == 4) // 轴状态机准备好
+        {
+            // 设置回原点模式，设置该轴的速度曲线参数
+            LTDMC.nmc_set_home_profile(MyCardNo, axis, Mymode, 500, 1000, 0.1, 0.1, 0);
+
+            // 执行回零运动
+            LTDMC.nmc_home_move(MyCardNo, axis);
+
+            // 等待回零运动完成
+            // while (！LTDMC.dmc_check_done(MyCardNo, axis))
+            // {
+            //     Thread.Sleep(100);
+            // }
+
+            // 判断回零是否正常完成
+            LTDMC.dmc_get_home_result(MyCardNo, axis, ref state);
+            if (state == 1)
+            {
+                Console.WriteLine($"轴 {axis} 回零完成");
+            }
+            else
+            {
+                Console.WriteLine($"轴 {axis} 回零失败");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"轴 {axis} 未处于准备好状态，状态机值: {statemachine}");
+        }
     }
 
 
-    public void AxialMove(int dir, double speed, double length)
+    public static void AxialMove(int dir, double speed, double length)
     {
         // 探头在 X 和 Z轴沿轴方向运动    
         // 获取探头相对初始当前弧度,垂直于地面的角度的。
@@ -61,12 +146,12 @@ public class Position
         Helper.GetPosition(MotionControl.AxisPositon);
 
         // A轴的角度，以弧度表示
-        double probe_deg = MotionControl.AxisPositon[(int)Resources.Properties.Axis.A] * DEGREE_CONVERSION;
+        double probeDeg = MotionControl.AxisPositon[(int)Resources.Properties.Axis.A] * DegreeConversion;
 
         // 计算目标位置，根据指定的长度和探头角度
         double[] targetPosition = new double[2];
-        targetPosition[0] = length * Math.Sin(probe_deg); // X 轴
-        targetPosition[1] = length * Math.Cos(probe_deg); // Z 轴
+        targetPosition[0] = length * Math.Sin(probeDeg); // X 轴
+        targetPosition[1] = length * Math.Cos(probeDeg); // Z 轴
 
         // 轴列表，分别表示 X 轴和 Z 轴
         ushort[] axisList = new ushort[]
@@ -87,11 +172,11 @@ public class Position
         // 设置运动的矢量配置，速度和加速/减速参数
         LTDMC.dmc_set_vector_profile_unit(
             MotionControl.CardNo, 0,
-            speed * SMOOTHING_RATIO, // 平滑速度
+            speed * SmoothingRatio, // 平滑速度
             speed, // 目标速度
-            ACCELERATION, // 加速时间
-            DECELERATION, // 减速时间
-            speed * SMOOTHING_RATIO // 平滑的结束速度
+            Acceleration, // 加速时间
+            Deceleration, // 减速时间
+            speed * SmoothingRatio // 平滑的结束速度
         );
 
         // 执行直线插补运动，X 和 Z 轴沿着目标位置运动
@@ -102,7 +187,7 @@ public class Position
     }
 
 
-    public void TangentialMove(int dir, double speed, double length)
+    public static void TangentialMove(int dir, double speed, double length)
     {
         // 探头在 X 和 Z轴沿轴切线运动
         // 获取探头相对初始当前弧度,垂直于地面的角度的。
@@ -110,10 +195,10 @@ public class Position
         // 使用直线插补运动
 
         Helper.GetPosition(MotionControl.AxisPositon);
-        double probe_deg = MotionControl.AxisPositon[(int)Resources.Properties.Axis.A] * DEGREE_CONVERSION;
+        double probeDeg = MotionControl.AxisPositon[(int)Resources.Properties.Axis.A] * DegreeConversion;
         double[] targetPosition = new double[2];
-        targetPosition[0] = length * Math.Cos(probe_deg); // X 轴
-        targetPosition[1] = length * Math.Sin(probe_deg) * -1; // Z 轴负方向
+        targetPosition[0] = length * Math.Cos(probeDeg); // X 轴
+        targetPosition[1] = length * Math.Sin(probeDeg) * -1; // Z 轴负方向
 
         // 轴列表，分别表示 X 轴和 Z 轴
         ushort[] axisList = new ushort[]
@@ -134,11 +219,11 @@ public class Position
         // 设置运动的矢量配置，速度和加速/减速参数
         LTDMC.dmc_set_vector_profile_unit(
             MotionControl.CardNo, 0,
-            speed * SMOOTHING_RATIO, // 平滑速度
+            speed * SmoothingRatio, // 平滑速度
             speed, // 目标速度
-            ACCELERATION, // 加速时间
-            DECELERATION, // 减速时间
-            speed * SMOOTHING_RATIO // 平滑的结束速度
+            Acceleration, // 加速时间
+            Deceleration, // 减速时间
+            speed * SmoothingRatio // 平滑的结束速度
         );
 
         // 执行直线插补运动，X 和 Z 轴沿着目标位置运动
@@ -148,28 +233,29 @@ public class Position
         );
     }
 
-    //先不管 有些逻辑 没有搞通 就是给定角度沿着表面去运动, 切线运动后调整姿态 再次确定法向量
-    public void SurroundMove(int dir, double speed, double length)
-    {
-        //沿着探头沿着X,Z轴 以探头为圆心，半径为MoveRadius的圆周运动，圆周插补
-        double[] Center = new double[2];
-        double[] Target = new double[2];
-        double probe_deg = MotionControl.AxisPositon[(int)Resources.Properties.Axis.A] * DEGREE_CONVERSION;
+    // 希望给定角度沿着表面去运动, 先圆弧补差位置 再沿着新圆心画弧线
+    public static void SurroundMove(int dir, double speed, double length)
+    {  // Length 为弧线
+        //先沿着探头沿着X,Z轴 以保持轴的运动，圆周插补
+        double[] center = new double[2];
+        double[] target = new double[2];
+        double probeDeg = MotionControl.AxisPositon[(int)Resources.Properties.Axis.A] * DegreeConversion;
 
-        ushort[] AxisList = new ushort[]
+        ushort[] axisList = new ushort[]
         {
             (ushort)Resources.Properties.Axis.X,
             (ushort)Resources.Properties.Axis.Z
         };
         // 计算圆心
-        Center[0] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.X] - MoveRadius * Math.Sin(probe_deg);
-        Center[1] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.Z] - MoveRadius * Math.Cos(probe_deg);
-        // 计算目标位置(这里 length 为弧长吧？ 弧度可以加减吧 )
-        Target[0] = Center[0] + MoveRadius * Math.Cos(probe_deg + (length / MoveRadius) * double.Pow(-1, dir));
-        Target[1] = Center[1] + MoveRadius * Math.Sin(probe_deg + (length / MoveRadius) * double.Pow(-1, dir));
-
+        center[0] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.X] - MoveRadius * Math.Sin(probeDeg);
+        center[1] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.Z] - MoveRadius * Math.Cos(probeDeg);
+        // 计算目标位置(这里 length 为弧长吧？ 弧度可以加减吧 后续可能要修改 因为给值不一样)
+        target[0] = center[0] + MoveRadius * Math.Cos(probeDeg + (length ) * double.Pow(-1, dir));
+        target[1] = center[1] + MoveRadius * Math.Sin(probeDeg + (length ) * double.Pow(-1, dir)); 
+        //这里传入的length 已经转换为 probe了
+   
         double time = MoveRadius * Base.PI * 2 * length / (36e4 * speed);
-        double probe_speed = length * 2 / time;
+        double probeSpeed = length * 2 / time;
 
         if (dir == (int)Resources.Properties.Direction.Forward)
         {
@@ -177,32 +263,37 @@ public class Position
         }
 
         LTDMC.dmc_set_vector_profile_unit(0, 0, speed * 0.2, speed, 0.1, 0.1, speed * 0.2);
-        LTDMC.dmc_set_profile_unit(0, 3, probe_speed * 0.2, probe_speed, 0.1, 0.1, probe_speed * 0.2);
-        LTDMC.dmc_arc_move_center_unit(0, 0, 2, AxisList, Target, Center, (ushort)dir, 0, 1);
-        LTDMC.dmc_pmove(0, 3, length * 2 + MotionControl.AxisPositon[(int)Resources.Properties.Axis.A], 1);
+        LTDMC.dmc_set_profile_unit(0, 3, probeSpeed * 0.2, probeSpeed, 0.1, 0.1, probeSpeed * 0.2);
+        LTDMC.dmc_arc_move_center_unit(0, 0, 2, axisList, target, center, (ushort)dir, 0, 1);
+        LTDMC.dmc_pmove(0, (ushort)Resources.Properties.Axis.A, length * 2 + MotionControl.AxisPositon[(int)Resources.Properties.Axis.A], 1);
     }
-
+    // 以步长判定来走位置,然后扫描采点的方法
     public void SampleTangetialMove(int dir, double speed, double length, double step)
     {
         Helper.GetPosition(MotionControl.AxisPositon);
 
         MotionControl.MotiHold = true;
-        List<double> StartPosition = MotionControl.AxisPositon.ToList();
+        List<double> startPosition = MotionControl.AxisPositon.ToList();
         TangentialMove(dir, speed, length);
-        int Count =0;
+        int count =0;
         while (MotionControl.MotiHold)
         {
             Helper.GetPosition(MotionControl.AxisPositon);
-            if (Math.Abs(MotionControl.AxisPositon[(int)Resources.Properties.Axis.X] - StartPosition[(int)Resources.Properties.Axis.X]) >= step)
+            if (Math.Abs(MotionControl.AxisPositon[(int)Resources.Properties.Axis.X] - startPosition[(int)Resources.Properties.Axis.X]) >= step)
             {
-                Count++;
-                StartPosition[(int)Resources.Properties.Axis.X] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.X];
+                count++;
+                startPosition[(int)Resources.Properties.Axis.X] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.X];
                 TangentialMove(dir, speed, length);
             }
-            if (Count >= 2)
+            if (count >= 2)
             {
                 MotionControl.MotiHold = false;
             }
         }
     }
+    
+    
+    
+    
+    
 }

@@ -27,15 +27,15 @@ public class Axis : Base
         Helper.GetPosition(MotionControl.AxisPositon);
     }
 
-    public void ResetAxis(int axis)
+    public static void ResetAxis(int axis)
     {
         // 可自定义reset哪个轴
-        LTDMC.dmc_set_position_unit(0, decimal.ToUInt16(axis), 0);
+        LTDMC.dmc_set_position_unit(MotionControl.CardNo, decimal.ToUInt16(axis), 0);
 
         // axis_reset implementation
     }
 
-    public void ResetAllAxes()
+    public static void ResetAllAxes()
     {
         // 清零位置
         for (int i = 0; i < MotionControl.TotalAxis; i++)
@@ -49,9 +49,9 @@ public class Axis : Base
         // axis_move implementation
     }
 
-    public void StopAllAxes()
+    public static void StopAllAxes()
     {
-        // 并行化下停止所有轴
+        // 停止所有轴
         
         for (int i = 0; i < MotionControl.TotalAxis; i++)
         {

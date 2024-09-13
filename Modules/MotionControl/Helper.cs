@@ -56,4 +56,9 @@ public class Helper:Base
         LTDMC.dmc_set_equiv(0, 2, 10);
         LTDMC.dmc_set_equiv(0, 5, 10);
     }
+
+    public static bool CheckAxisStatus(int axis)
+    {
+        return LTDMC.dmc_check_done(0, (ushort)axis);
+    }
 }

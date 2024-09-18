@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using System.Diagnostics;
+using SurfaceScan.Modules.Log;
 
 namespace SurfaceScan.Modules.DataProcessing;
 
@@ -12,7 +13,7 @@ public static class PCI9850Control
     public static bool GrabHold { get; set; }
     // 用于同步请求的标志
 
-    public static bool _block { get; set; }
+    public static bool Block { get; set; }
 
     private static List<byte> _data = new List<byte>(); // 存储抓取的数据
     static byte[] _buf = null; // 延迟初始化缓冲区 使用 byte[] 来替代 unsigned char*
@@ -33,25 +34,30 @@ public static class PCI9850Control
         // 检查是否连接成功
         // 连接成功，执行其他操作
         // 如果连接失败，输出调试信息
-        Debug.WriteLine(_hdl == IntPtr.Zero ? "Cannot find signal card" : "Signal card connected successfully");
+        LogManager.Info(_hdl == IntPtr.Zero ? "Cannot find signal card" : "Signal card connected successfully");
     }
 
     public static void PCI9850Init()
     {
-        var parameter = new _PCI9850_PARA_INIT.__Internal
+        try
         {
-            lADFmt = (int)EmADFormat.ADFMT_STBIN,
-            TriggerMode = (int)EmTriggerMode.TRIG_MODE_DELAY,
-            TriggerSource = (int)EmTriggerSource.TRIG_SRC_EXT_RISING,
-            TriggerLength = (int)DataProcessing.SignalParameters.TriggerLength,
-            TriggerDelay = (int)DataProcessing.SignalParameters.TriggerDelay
-        };
-        // 判断是否初始化成功
-        // 初始化成功，执行其他操作
-        // 如果初始化失败，输出调试信息 1为 true 0为 false
+            var parameter = new _PCI9850_PARA_INIT.__Internal
+            {
+                lADFmt = (int)EmADFormat.ADFMT_STBIN,
+                TriggerMode = (int)EmTriggerMode.TRIG_MODE_DELAY,
+                TriggerSource = (int)EmTriggerSource.TRIG_SRC_EXT_RISING,
+                TriggerLength = (int)DataProcessing.SignalParameters.TriggerLength,
+                TriggerDelay = (int)DataProcessing.SignalParameters.TriggerDelay
+            };
 
-        int initresult = PCI9850.PCI9850_initAD(_hdl, _PCI9850_PARA_INIT.__CreateInstance(parameter));
-        Debug.WriteLine(initresult == 1 ? "PCI9850 init success" : "PCI9850 init failed");
+            int initresult = PCI9850.PCI9850_initAD(_hdl, _PCI9850_PARA_INIT.__CreateInstance(parameter));
+            LogManager.Info(initresult == 1 ? "PCI9850 init success" : "PCI9850 init failed");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error("PCI9850 initialization failed: " + e.Message);
+            throw;
+        }
     }
 
     public static unsafe void GrabSignal()
@@ -87,16 +93,16 @@ public static class PCI9850Control
             ProcessSignalData(_buf);
 
             // 4. 等待数据处理完成
-            _block = true;
+            Block = true;
             _blockEvent.Reset(); // 重置事件
-            while (_block)
+            while (Block)
             {
                 if (!GrabHold) return;
                 _blockEvent.WaitOne(1); // 使用同步事件避免忙等待
             }
-
+            _buf = null; // 释放缓冲区
             // 5. 输出数据大小
-            Console.WriteLine($"Data size: {_data.Count}");
+            LogManager.Info($"Data size: {_data.Count}");
         }
     }
 
@@ -109,7 +115,7 @@ public static class PCI9850Control
             _data.Add(buf[i]);
         }
 
-        _block = false; // 数据处理完成，解除 block 状态
+        Block = false; // 数据处理完成，解除 block 状态
         // 在这里可以发出读取请求或其他信号处理
         // ReadRequest();
         // 触发事件通知 read_request 相关逻辑

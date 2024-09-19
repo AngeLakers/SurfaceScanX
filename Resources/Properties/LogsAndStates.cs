@@ -5,7 +5,8 @@ public enum LogLevel
 {
     Info,
     Debug,
-    Error
+    Error,
+    Warning
 }
 
 public interface IState

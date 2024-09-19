@@ -5,15 +5,40 @@ namespace SurfaceScan.Modules.MotionControl;
 
 public class Axis : Base
 {
+    private static ushort _errCode; //按照案例修改完成
+    private static ushort _axisStateMachine;
+
     public static void EnableAllAxes()
     {
         try
         {
             for (int i = 0; i < MotionControl.TotalAxis; i++)
-            {   
-                LTDMC.nmc_set_axis_enable(0, decimal.ToUInt16(i));
+            {
+                LTDMC.nmc_get_errcode(CardNo, 2, ref _errCode);
+                if (_errCode == 0)
+                {
+                    LTDMC.nmc_set_axis_enable(CardNo, decimal.ToUInt16(i));
+
+                    LTDMC.nmc_get_axis_state_machine(CardNo, decimal.ToUInt16(i), ref _axisStateMachine);
+                    DateTime dtStart = DateTime.Now; //获取当前时间
+                    while (_axisStateMachine != 4) //监控轴状态机的值，该值等于4 表示轴状态机处于使能状态
+                    {
+                        if ((DateTime.Now - dtStart).TotalMilliseconds >= 1000) //1s 时间防止死循环
+                        {
+                            break;
+                        }
+
+                        LTDMC.nmc_set_axis_enable(CardNo, (ushort)i); //设置轴使能
+                        LTDMC.nmc_get_axis_state_machine(CardNo, (ushort)i, ref _axisStateMachine); //获取状态机
+                    }
+                }
+                else //总线不正常状态下不响应使能操作
+                {
+                    LTDMC.nmc_clear_errcode(CardNo, 2); //尝试清除总线错误
+                    throw new Exception(_errCode.ToString());
+                }
             }
-            
+
             LogManager.Info("启用所有轴成功");
         }
         catch (Exception e)
@@ -27,13 +52,26 @@ public class Axis : Base
         Position.GetPosition(MotionControl.AxisPositon);
     }
 
+    public static ushort MyAxis { get; set; }
+
     public static void DisableAllAxes()
     {
         try
         {
             for (int i = 0; i < MotionControl.TotalAxis; i++)
             {
-                LTDMC.nmc_set_axis_disable(0, decimal.ToUInt16(i));
+                LTDMC.nmc_get_errcode(CardNo, 2, ref _errCode);
+                if (_errCode == 0)
+                {
+                    LTDMC.nmc_set_axis_disable(CardNo, decimal.ToUInt16(i));
+
+                    LTDMC.nmc_get_axis_state_machine(CardNo, decimal.ToUInt16(i), ref _axisStateMachine);
+                }
+                else //总线不正常状态下不响应使能操作
+                {
+                    LTDMC.nmc_clear_errcode(CardNo, 2); //尝试清除总线错误
+                    throw new Exception(_errCode.ToString());
+                }
             }
 
             // 更新位置
@@ -69,7 +107,7 @@ public class Axis : Base
             // 清零位置
             for (int i = 0; i < MotionControl.TotalAxis; i++)
             {
-                LTDMC.dmc_set_position_unit(MotionControl.CardNo, decimal.ToUInt16(i), 0);
+                ResetAxisPosition(i);
             }
 
             LogManager.Info("重置所有轴位置为0成功");
@@ -95,6 +133,7 @@ public class Axis : Base
             {
                 LTDMC.dmc_stop(MotionControl.CardNo, decimal.ToUInt16(i), 0);
             }
+
             LogManager.Info("停止所有轴成功");
         }
         catch (Exception e)

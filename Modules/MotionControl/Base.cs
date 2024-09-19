@@ -12,11 +12,11 @@ public class Base
     public static bool MotiHold { get; set; } = false;
     public static bool TracSample { get; set; } = false;
     public static ushort CardNo { get; } = 0;
-    public static ushort ErrCode { get; set; } = 0;
-    public static ushort StateMachine { get; set; } = 0;
+    public static ushort ErrCode { get; set; }  //总线错误代码
+    public static ushort StateMachine { get; set; }  // 状态机状态
     public new static bool TrackHold { get; set; } = false;
-    static int _errcode = 0; //总线错误代码
-    static int _statemachine= 0; //状态机状态
+    
+    
 
     protected Base()
     {

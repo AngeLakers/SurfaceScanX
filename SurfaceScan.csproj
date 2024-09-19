@@ -19,10 +19,6 @@
       <Compile Remove="Modules\MotionControl\Scan.cs" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Modules\States\" />
-    </ItemGroup>
-
 	<Target Name="ThirdPart" BeforeTargets="PrepareForBuild">
 		<ItemGroup>
 			<LTDMC Include="thirdpart\LTDMC\*.dll"></LTDMC>

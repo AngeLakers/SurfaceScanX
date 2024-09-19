@@ -147,4 +147,9 @@ public static class LogManager
             }
         }
     }
+
+    public static void Warning(string message)
+    {
+        Log(LogLevel.Warning, message);
+    }
 }

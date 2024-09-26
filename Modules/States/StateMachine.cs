@@ -31,11 +31,6 @@ public class StateMachine : IStateMachine
         _currentState?.Update();
     }
     
-    public void Running()
-    {
-        
-    }
-
     public IState GetCurrentState()
     {
         return _currentState;

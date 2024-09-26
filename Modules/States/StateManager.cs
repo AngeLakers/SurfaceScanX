@@ -2,6 +2,7 @@
 using SurfaceScan.Resources.Properties;
 
 namespace SurfaceScan.Modules.States;
+
 using System;
 using System.Collections.Generic;
 
@@ -15,13 +16,12 @@ public class StateManager
     {
         if (_stateMachines.ContainsKey(moduleName))
         {
-            Console.WriteLine($"StateMachine for {moduleName} is already registered.");
             LogManager.Warning($"StateMachine for {moduleName} is already registered.");
         }
         else
         {
             _stateMachines[moduleName] = stateMachine;
-            Console.WriteLine($"StateMachine for {moduleName} registered successfully.");
+            LogManager.Info($"StateMachine for {moduleName} registered successfully.");
         }
     }
 

@@ -1,21 +1,26 @@
 ﻿using csLTDMC;
 using SurfaceScan.Modules.Log;
+using SurfaceScan.Modules.States;
 
 namespace SurfaceScan.Modules.MotionControl;
 
 public class MotionControl : Base
 {
     public static int TotalAxis { get; set; } = 6; //默认 以防出错
+
     public static List<double> AxisPositon = null!;
+    
+
     public static List<double> StartAxisPositon = null!;
     public static List<double> EndAxisPositon = null!;
 
     public Axis Axis { get; private set; }
     public Track Track { get; private set; }
     public Position Position { get; private set; }
+    public StateMachine MotionControlStateMachine { get; set; }
 
 
-    public MotionControl()
+    public MotionControl(StateManager stateManager)
     {
         try
         {
@@ -30,6 +35,11 @@ public class MotionControl : Base
             AxisPositon = new List<double>();
             StartAxisPositon = new List<double>();
             Board.BoardLink();
+            
+            
+            MotionControlStateMachine = new StateMachine();
+            stateManager.RegisterStateMachine("DataAcquire", MotionControlStateMachine);
+            MotionControlStateMachine.SetState(new DataAcquireState());
         }
         catch (Exception ex)
         {
@@ -39,4 +49,6 @@ public class MotionControl : Base
 
         LogManager.Info("运动控制模块初始化成功");
     }
+
+    
 }

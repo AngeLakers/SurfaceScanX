@@ -1,6 +1,7 @@
 ﻿using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using SurfaceScan.Modules.Log;
 using SurfaceScan.Modules.States;
 
@@ -40,20 +41,23 @@ public class PCI9850Control
     {
         try
         {
+            // 初始化参数
             var parameter = new _PCI9850_PARA_INIT.__Internal
             {
-                lADFmt = (int)EmADFormat.ADFMT_STBIN,
-                TriggerMode = (int)EmTriggerMode.TRIG_MODE_DELAY,
-                TriggerSource = (int)EmTriggerSource.TRIG_SRC_EXT_RISING,
-                TriggerLength = (int)DataProcessing.SignalParameters.TriggerLength,
-                TriggerDelay = (int)DataProcessing.SignalParameters.TriggerDelay
+                lADFmt = (int)EmADFormat.ADFMT_STBIN, // 设置AD格式
+                TriggerMode = (int)EmTriggerMode.TRIG_MODE_DELAY, // 设置触发模式
+                TriggerSource = (int)EmTriggerSource.TRIG_SRC_EXT_RISING, // 设置触发源
+                TriggerLength = (int)DataProcessing.SignalParameters.TriggerLength, // 设置触发长度
+                TriggerDelay = (int)DataProcessing.SignalParameters.TriggerDelay // 设置触发延迟
             };
 
+            // 初始化PCI9850
             int pci9850InitAd = PCI9850.PCI9850_initAD(_hdl, _PCI9850_PARA_INIT.__CreateInstance(parameter));
             LogManager.Info(pci9850InitAd == 1 ? "PCI9850 init success" : "PCI9850 init failed");
         }
         catch (Exception e)
         {
+            // 捕获异常并记录错误日志
             LogManager.Error("PCI9850 initialization failed: " + e.Message);
             throw;
         }
@@ -72,7 +76,7 @@ public class PCI9850Control
                 while (bufcnt < DataProcessing.SignalParameters.TriggerLength * 32)
                 {
                     bufcnt = PCI9850.PCI9850_GetBufCnt(_hdl); // 获取缓冲区大小
-                    if (!GrabHold) return; // 如果退出抓取，直接返回
+                    if (!_isRunning) return; // 如果退出抓取，直接返回
                 }
 
                 // 2. 读取数据
@@ -114,7 +118,6 @@ public class PCI9850Control
       
         // 通知数据处理完成
         // 在这里可以发出读取请求或其他信号处理
-        // ReadRequest();
         // 触发事件通知 read_request 相关逻辑
         OnReadRequest(new DataEventArgs(_data));
     }
@@ -134,17 +137,29 @@ public partial class PCI9850InitState
 {
     public void Enter()
     {
-        // 从配置文件中获取参数,设置参数
-        // 调用 PCI9850_Link 函数，连接第 0 个设备
-        PCI9850Control._hdl = PCI9850.PCI9850_Link(0);
+        try
+        {
 
-        // 检查是否连接成功
-        // 连接成功，执行其他操作
-        // 如果连接失败，输出调试信息
-        LogManager.Info(PCI9850Control._hdl == IntPtr.Zero
-            ? "Cannot find signal card"
-            : "Signal card connected successfully");
-        PCI9850Control.PCI9850Init();
+            // 从配置文件中获取参数,设置参数
+            // 调用 PCI9850_Link 函数，连接第 0 个设备
+            PCI9850Control._hdl = PCI9850.PCI9850_Link(0);
+
+            // 检查是否连接成功
+            // 连接成功，执行其他操作
+            // 如果连接失败，输出调试信息
+            LogManager.Info(PCI9850Control._hdl == IntPtr.Zero
+                ? "Cannot find signal card"
+                : "Signal card connected successfully");
+            PCI9850Control.PCI9850Init();
+            this.Update();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error("PCI9850 init failed: " + e.Message);
+            throw new ExternalException();
+        }
+        
+        
     
     }
 }

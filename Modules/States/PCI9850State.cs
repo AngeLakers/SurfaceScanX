@@ -16,27 +16,23 @@ public partial class PCI9850InitState : IState
 
     public void Update()
     {
-        throw new System.NotImplementedException();
+        LogManager.Info("结束初始化9850采集卡");
+        _stateMachine.SetState(new PCI9850SamplingState());
     }
 
     public void Exit()
     {
-        LogManager.Info("结束初始化9850采集卡");
-        _stateMachine.SetState(new PCI9850SamplingState(_stateMachine));
+        LogManager.Info("结束初始化9850采集卡成功");
     }
 }
 
 public partial class PCI9850SamplingState : IState
 {
-    
-    private readonly StateMachine _stateMachine;
+  
     private Thread _grabThread;
 
 
-    public PCI9850SamplingState(StateMachine stateMachine)
-    {
-        _stateMachine = stateMachine;
-    }
+
 
     public void Enter()
     {

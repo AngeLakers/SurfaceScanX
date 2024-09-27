@@ -17,6 +17,7 @@ public class Position : Base
     const double Deceleration = 0.1; // 减速时间
     const double SmoothingRatio = 0.2; // 运动平滑比率
 
+   
     //double probeDeg = paras[9] / 2 * PI * 2 / 36e4;
     //探头角度计算，具体怎么算不懂。
     public void BackToOrigin(ushort myCardNo, ushort myMode)

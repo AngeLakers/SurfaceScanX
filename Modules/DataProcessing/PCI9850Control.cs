@@ -30,11 +30,12 @@ public class PCI9850Control
     public StateMachine PCI9850StateMachine { get; private set; }
 
 
-    PCI9850Control(StateManager stateManager)
+    PCI9850Control()
     {
         PCI9850StateMachine = new StateMachine();
-        stateManager.RegisterStateMachine("PCI9850", PCI9850StateMachine);
+        StateManager.RegisterStateMachine("PCI9850", PCI9850StateMachine);
         PCI9850StateMachine.SetState(new PCI9850InitState(PCI9850StateMachine));
+        
     }
 
     internal static void PCI9850Init()
@@ -151,7 +152,7 @@ public partial class PCI9850InitState
                 ? "Cannot find signal card"
                 : "Signal card connected successfully");
             PCI9850Control.PCI9850Init();
-            this.Update();
+           
         }
         catch (Exception e)
         {

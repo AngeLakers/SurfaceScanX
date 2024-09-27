@@ -23,10 +23,11 @@ public partial class PCI9850InitState : IState
     public void Exit()
     {
         LogManager.Info("结束初始化9850采集卡成功");
+        _stateMachine.ChangeState(new PCI9850SamplingState());
     }
 }
 
-public partial class PCI9850SamplingState : IState
+public class PCI9850SamplingState : IState
 {
   
     private Thread _grabThread;

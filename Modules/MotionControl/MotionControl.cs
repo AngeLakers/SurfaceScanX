@@ -20,7 +20,7 @@ public class MotionControl : Base
     public StateMachine MotionControlStateMachine { get; set; }
 
 
-    public MotionControl(StateManager stateManager)
+    public MotionControl()
     {
         try
         {
@@ -38,7 +38,7 @@ public class MotionControl : Base
             
             
             MotionControlStateMachine = new StateMachine();
-            stateManager.RegisterStateMachine("DataAcquire", MotionControlStateMachine);
+            StateManager.RegisterStateMachine("MotionControl", MotionControlStateMachine);
             MotionControlStateMachine.SetState(new DataAcquireState());
         }
         catch (Exception ex)

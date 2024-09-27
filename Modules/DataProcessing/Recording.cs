@@ -14,12 +14,18 @@ public record SignalParameters
     public static double TriggerDelay { get; private set; } = CalculateTriggerDelay(); // 触发延迟 14
     public static double GateStartPoint { get; private set; } = CalculateGateStartPoint(); // 触发起始 15
     public static double GateEndPoint { get; set; } = CalculateGateEndPoint(); // 触发结束 16
+    
+    internal const double ProbeLength = 9e4; // 探头长度 
+    
+    public const double ProbeFocus = 1.25e4; // 探头焦距
 
     private static double CalculateSightLength() => Thick / SoundSpeed * 4e5;
     private static double CalculateTriggerLength() => SightLength / 32 + 1;
     private static double CalculateTriggerDelay() => Delay * 2e2;
     private static double CalculateGateStartPoint() => GateStart / SoundSpeed * 4e5;
     private static double CalculateGateEndPoint() => (GateStart + GateLength) / SoundSpeed * 4e5;
+    
+    
 }
 
 public static class GlobalParameters

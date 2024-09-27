@@ -4,6 +4,10 @@ public class Track
 {
     private const double CorrSurrSpeed = 2e3;
     private const double CorrAxalSpeed = 1e3;
+    
+    public static double CorrectionDegree { get; set; } = new double();
+    public static double CorrectionLength { get; set; } = new double();
+    
 
     public void ProbeCorrection(double corrDeg, double corrLen)
     {

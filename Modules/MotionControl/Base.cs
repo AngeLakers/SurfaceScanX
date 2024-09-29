@@ -7,8 +7,7 @@ using csLTDMC;
 public class Base
 {
     // 共享常量
-    public const double Pi = 3.1415926535;
-    public const double MoveRadius = 10.25e4;
+  
     public static bool MotiHold { get; set; } = false;
     public static bool TracSample { get; set; } = false;
     public static ushort CardNo { get; } = 0;

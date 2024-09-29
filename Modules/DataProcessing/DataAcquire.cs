@@ -175,4 +175,6 @@ public class DataAcquire
             LogManager.Info("加载轨迹数据失败: " + ex.Message);
         }
     }
+    
+  
 }

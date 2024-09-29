@@ -1,5 +1,6 @@
 ﻿using SurfaceScan.Modules.Log;
 using SurfaceScan.Resources.Properties;
+using static SurfaceScan.Modules.MotionControl.ControlParameters;
 
 namespace SurfaceScan.Modules.MotionControl;
 
@@ -12,7 +13,7 @@ public class Position : Base
 //len = 5e4,
 {
     // 常量定义
-    const double DegreeConversion = Base.Pi * 2 / 360000; // 36e4 用作将编码器单位转换为弧度
+    const double DegreeConversion = Pi * 2 / 360000; // 36e4 用作将编码器单位转换为弧度
     const double Acceleration = 0.1; // 加速时间
     const double Deceleration = 0.1; // 减速时间
     const double SmoothingRatio = 0.2; // 运动平滑比率
@@ -270,12 +271,12 @@ public class Position : Base
             // 计算圆心
             center[0] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.X] - MoveRadius * Math.Sin(probeDeg);
             center[1] = MotionControl.AxisPositon[(int)Resources.Properties.Axis.Z] - MoveRadius * Math.Cos(probeDeg);
-            // 计算目标位置(这里 length 为弧长吧？ 弧度可以加减吧 后续可能要修改 因为给值不一样)
+            // 计算目标位置(这里 length 为弧长吧？ 弧度可以加减吧 后续可能要MN修改 因为给值不一样)
             target[0] = center[0] + MoveRadius * Math.Cos(probeDeg + (length) * double.Pow(-1, dir));
             target[1] = center[1] + MoveRadius * Math.Sin(probeDeg + (length) * double.Pow(-1, dir));
             //这里传入的length 已经转换为 probe了
             LogManager.Info("目标位置计算成功");
-            double time = MoveRadius * Pi * 2 * length / (36e4 * speed);
+            double time = MoveRadius * double.Pi * 2 * length / (36e4 * speed);
             double probeSpeed = length * 2 / time;
 
             if (dir == (int)Direction.Forward)

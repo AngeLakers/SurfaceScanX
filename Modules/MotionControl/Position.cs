@@ -1,4 +1,5 @@
-﻿using SurfaceScan.Modules.Log;
+﻿using SurfaceScan.Modules.DataProcessing;
+using SurfaceScan.Modules.Log;
 using SurfaceScan.Resources.Properties;
 using static SurfaceScan.Modules.MotionControl.ControlParameters;
 
@@ -13,7 +14,7 @@ public class Position : Base
 //len = 5e4,
 {
     // 常量定义
-    const double DegreeConversion = Pi * 2 / 360000; // 36e4 用作将编码器单位转换为弧度
+    const double DegreeConversion = Double.Pi * 2 / 360000; // 36e4 用作将编码器单位转换为弧度
     const double Acceleration = 0.1; // 加速时间
     const double Deceleration = 0.1; // 减速时间
     const double SmoothingRatio = 0.2; // 运动平滑比率
@@ -175,7 +176,7 @@ public class Position : Base
 
             // 设置运动的矢量配置，速度和加速/减速参数
             LTDMC.dmc_set_vector_profile_unit(
-                MotionControl.CardNo, 0,
+                CardNo, 0,
                 speed * SmoothingRatio, // 平滑速度
                 speed, // 目标速度
                 Acceleration, // 加速时间
@@ -185,7 +186,7 @@ public class Position : Base
             LogManager.Info("设置轴向运动参数成功");
             // 执行直线插补运动，X 和 Z 轴沿着目标位置运动
             LTDMC.dmc_line_unit(
-                MotionControl.CardNo,
+                CardNo,
                 0, 2, axisList, targetPosition, 0
             );
             LogManager.Info("轴向运动成功");
@@ -230,7 +231,7 @@ public class Position : Base
 
             // 设置运动的矢量配置，速度和加速/减速参数
             LTDMC.dmc_set_vector_profile_unit(
-                Base.CardNo, 0,
+                CardNo, 0,
                 speed * SmoothingRatio, // 平滑速度
                 speed, // 目标速度
                 Acceleration, // 加速时间
@@ -240,7 +241,7 @@ public class Position : Base
             LogManager.Info("设置切向运动参数成功");
             // 执行直线插补运动，X 和 Z 轴沿着目标位置运动
             LTDMC.dmc_line_unit(
-                MotionControl.CardNo,
+                CardNo,
                 0, 2, axisList, targetPosition, 0
             );
             LogManager.Info("切向运动成功");
@@ -334,7 +335,7 @@ public class Position : Base
             double dCmdPos = 0;
             for (int i = 0; i < MotionControl.TotalAxis; i++)
             {
-                LTDMC.dmc_get_position_unit(decimal.ToUInt16(Base.CardNo), decimal.ToUInt16(i), ref dCmdPos);
+                LTDMC.dmc_get_position_unit(decimal.ToUInt16(CardNo), decimal.ToUInt16(i), ref dCmdPos);
                 positions.Add(dCmdPos);
             }
 
@@ -356,7 +357,7 @@ public class Position : Base
             int axis = 0;
             for (int i = 0; i < MotionControl.TotalAxis; i++)
             {
-                LTDMC.dmc_get_position_unit(decimal.ToUInt16(Base.CardNo), decimal.ToUInt16(axis), ref dCmdPos);
+                LTDMC.dmc_get_position_unit(decimal.ToUInt16(CardNo), decimal.ToUInt16(axis), ref dCmdPos);
                 positions[i] = dCmdPos;
             }
 

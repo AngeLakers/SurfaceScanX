@@ -1,14 +1,16 @@
 ﻿using csLTDMC;
 using SurfaceScan.Modules.Log;
-
+using static SurfaceScan.Modules.MotionControl.ControlParameters;
 namespace SurfaceScan.Modules.MotionControl;
+
+
 
 public class Axis : Base
 {
     private static ushort _errCode; //按照案例修改完成
     private static ushort _axisStateMachine;
 
-    public static void EnableAllAxes()
+    public void EnableAllAxes()
     {
         try
         {
@@ -131,7 +133,7 @@ public class Axis : Base
             // 停止所有轴
             for (int i = 0; i < MotionControl.TotalAxis; i++)
             {
-                LTDMC.dmc_stop(MotionControl.CardNo, decimal.ToUInt16(i), 0);
+                LTDMC.dmc_stop(CardNo, decimal.ToUInt16(i), 0);
             }
 
             LogManager.Info("停止所有轴成功");

@@ -6,11 +6,11 @@ namespace SurfaceScan.Modules.MotionControl;
 
 using csLTDMC;
 
-public static class Board
+public class Board
 {
-    public static void BoardLink()
+    // 开启板卡连接
+    public void BoardInit()
     {
-        // 开启板卡连接
         try
         {
             LTDMC.dmc_board_init();
@@ -22,25 +22,38 @@ public static class Board
         }
     }
 
-    public static async Task BoardSoftResetAsync()
+    //软重置板卡
+    public void BoardSoftReset()
     {
         try
         {
-            // 重置板卡
-            LTDMC.dmc_soft_reset(Base.CardNo);
-            BoardClose();
-            // 等15秒
-            await Task.Delay(15000);
-            BoardLink();
+            // 执行总线热复位操作后，循环调用nmc_get_errcode 函数判断总线状态，如果总线状态正常，说明总线热复位成功，否则继续调用nmc_get_errcode 函数判断总线状态，直到总线状态正常
+            LTDMC.dmc_soft_reset(ControlParameters.CardNo);
+            var errCode = Base.ErrCode;
+            int retryCount = 0;
+
+            while (LTDMC.nmc_get_errcode(ControlParameters.CardNo, 2, ref errCode) != 0)
+            {
+                if (retryCount++ >= ControlParameters.MaxRetries)
+                {
+                    LogManager.Error("板卡软重置超过最大重试次数");
+                    return;
+                }
+
+                //Thread 暂停
+                Thread.Sleep(1000);
+            }
+
             LogManager.Info("板卡软重置成功");
         }
         catch (Exception ex)
         {
             LogManager.Error($"板卡软重置失败: {ex.Message}");
+            throw;
         }
     }
 
-    public static async Task BoardHardResetAsync()
+    public void BoardHardReset()
     {
         try
         {
@@ -48,8 +61,8 @@ public static class Board
             LTDMC.dmc_board_reset();
             BoardClose();
             // 等15秒
-            await Task.Delay(15000);
-            BoardLink();
+            Task.Delay(15000);
+            BoardInit();
             LogManager.Info("板卡硬重置成功");
         }
         catch (Exception ex)
@@ -59,7 +72,7 @@ public static class Board
     }
 
 
-    public static void BoardClose()
+    public void BoardClose()
     {
         // 关闭板卡
         try

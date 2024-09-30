@@ -1,5 +1,5 @@
 ﻿using SurfaceScan.Modules.Log;
-
+using static SurfaceScan.Modules.MotionControl.ControlParameters;
 namespace SurfaceScan.Modules.MotionControl;
 
 using csLTDMC;
@@ -10,7 +10,7 @@ public class Base
   
     public static bool MotiHold { get; set; } = false;
     public static bool TracSample { get; set; } = false;
-    public static ushort CardNo { get; } = 0;
+  
     public static ushort ErrCode { get; set; }  //总线错误代码
     public static ushort StateMachine { get; set; }  // 状态机状态
     public new static bool TrackHold { get; set; } = false;
@@ -30,7 +30,7 @@ public class Base
         try
         {
             // 调用 nmc_get_total_axes 函数
-            result = LTDMC.nmc_get_total_axes(decimal.ToUInt16(MotionControl.CardNo), ref total);
+            result = LTDMC.nmc_get_total_axes(decimal.ToUInt16(CardNo), ref total);
 
             // 检查返回值是否成功
             if (result != 0)
@@ -49,7 +49,7 @@ public class Base
         return result;
     }
 
-    protected static void SetEquiv()
+    protected void SetEquiv()
     {
         try
         {
@@ -58,13 +58,13 @@ public class Base
                 // 设置轴的脉冲当量
                 if (i != 2 && i != 5)
                 {
-                    LTDMC.dmc_set_equiv(Base.CardNo, decimal.ToUInt16(i), 1);
+                    LTDMC.dmc_set_equiv(ControlParameters.CardNo, decimal.ToUInt16(i), 1);
                 }
             }
 
             // z轴和下面盘 加了1/10 减速器
-            LTDMC.dmc_set_equiv(Base.CardNo, (ushort)Resources.Properties.Axis.Z, 10);
-            LTDMC.dmc_set_equiv(Base.CardNo, (ushort)Resources.Properties.Axis.W, 10);
+            LTDMC.dmc_set_equiv(ControlParameters.CardNo, (ushort)Resources.Properties.Axis.Z, 10);
+            LTDMC.dmc_set_equiv(ControlParameters.CardNo, (ushort)Resources.Properties.Axis.W, 10);
             LogManager.Info("设置脉冲当量成功");
         }
         catch (Exception ex)
@@ -80,7 +80,7 @@ public class Base
         try
         {
             // 设置轴的运动参数
-            LTDMC.dmc_set_profile_unit(MotionControl.CardNo, (ushort)axis, speed * ratio, speed, 0.1, 0.1,
+            LTDMC.dmc_set_profile_unit(ControlParameters.CardNo, (ushort)axis, speed * ratio, speed, 0.1, 0.1,
                 speed * ratio);
             LogManager.Info("设置轴的运动参数成功");
         }
@@ -98,7 +98,7 @@ public class Base
         try
         {
             // 设置轴的运动参数
-            LTDMC.dmc_set_vector_profile_unit(MotionControl.CardNo, (ushort)axis, speed * ratio, speed, 0.1, 0.1, 0.1);
+            LTDMC.dmc_set_vector_profile_unit(CardNo, (ushort)axis, speed * ratio, speed, 0.1, 0.1, 0.1);
             LogManager.Info("设置轴的插补运动参数成功");
         }
         catch (Exception ex)

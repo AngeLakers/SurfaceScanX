@@ -9,7 +9,7 @@ public class MotionControl : Base
     public static int TotalAxis { get; set; } = 6; //默认 以防出错
 
     public static List<double> AxisPositon = null!;
-    
+
 
     public static List<double> StartAxisPositon = null!;
     public static List<double> EndAxisPositon = null!;
@@ -19,6 +19,8 @@ public class MotionControl : Base
     public Position Position { get; private set; }
     public StateMachine MotionControlStateMachine { get; set; }
 
+    private Board Board { get; set; }
+
 
     public MotionControl()
     {
@@ -27,6 +29,7 @@ public class MotionControl : Base
             Axis = new Axis();
             Track = new Track();
             Position = new Position();
+            Board = new Board();
 
             MotiHold = false;
             TrackHold = false;
@@ -34,9 +37,9 @@ public class MotionControl : Base
             TotalAxis = GetTotalAxis();
             AxisPositon = new List<double>();
             StartAxisPositon = new List<double>();
-            Board.BoardLink();
-            
-            
+            Board.BoardInit();
+
+
             MotionControlStateMachine = new StateMachine();
             StateManager.RegisterStateMachine("MotionControl", MotionControlStateMachine);
             MotionControlStateMachine.SetState(new DataAcquireState());
@@ -50,5 +53,9 @@ public class MotionControl : Base
         LogManager.Info("运动控制模块初始化成功");
     }
 
-    
+
+    ~MotionControl()
+    {
+        Board.BoardClose();
+    }
 }

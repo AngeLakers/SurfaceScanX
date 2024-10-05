@@ -25,7 +25,7 @@ public class Base
     {
         // 保险起见，先初始化为 6
         uint total = 6;
-        short result = 6;
+        short result = 0;
 
         try
         {
@@ -46,10 +46,10 @@ public class Base
             throw;
         }
 
-        return result;
+        return (short)total;
     }
 
-    protected void SetEquiv()
+    protected bool SetEquiv()
     {
         try
         {
@@ -58,7 +58,11 @@ public class Base
                 // 设置轴的脉冲当量
                 if (i != 2 && i != 5)
                 {
-                    LTDMC.dmc_set_equiv(ControlParameters.CardNo, decimal.ToUInt16(i), 1);
+                   var result = LTDMC.dmc_set_equiv(ControlParameters.CardNo, decimal.ToUInt16(i), 1);
+                     if (result != 0)
+                     {
+                         return false;
+                     }
                 }
             }
 
@@ -66,12 +70,16 @@ public class Base
             LTDMC.dmc_set_equiv(ControlParameters.CardNo, (ushort)Resources.Properties.Axis.Z, 10);
             LTDMC.dmc_set_equiv(ControlParameters.CardNo, (ushort)Resources.Properties.Axis.W, 10);
             LogManager.Info("设置脉冲当量成功");
+
+            return true;
         }
         catch (Exception ex)
         {
             LogManager.Error($"设置脉冲当量失败: {ex.Message}");
             throw;
         }
+
+        return false;
     }
 
 

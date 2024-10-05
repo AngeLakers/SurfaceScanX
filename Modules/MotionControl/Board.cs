@@ -13,8 +13,18 @@ public class Board
     {
         try
         {
-            LTDMC.dmc_board_init();
-            LogManager.Info("登录板卡成功");
+            var result = LTDMC.dmc_board_init();
+            switch (result)
+            {
+                case 0:
+                    throw new Exception($"没有找到卡。{result}");
+                case >= 1 and <= 8:
+                    LogManager.Info($"登录板卡成功，卡数量：{result}");
+                    break;
+                case < 0:
+                    LogManager.Error($"2 张或2 张以上控制卡的硬件设置卡号相同");
+                    break;
+            }
         }
         catch (Exception ex)
         {
@@ -27,7 +37,7 @@ public class Board
     {
         try
         {
-            // 执行总线热复位操作后，循环调用nmc_get_errcode 函数判断总线状态，如果总线状态正常，说明总线热复位成功，否则继续调用nmc_get_errcode 函数判断总线状态，直到总线状态正常
+            // 执行总线软复位操作后，循环调用nmc_get_errcode 函数判断总线状态，如果总线状态正常，说明总线软复位成功，否则继续调用nmc_get_errcode 函数判断总线状态，直到总线状态正常
             LTDMC.dmc_soft_reset(ControlParameters.CardNo);
             var errCode = Base.ErrCode;
             int retryCount = 0;
@@ -40,8 +50,8 @@ public class Board
                     return;
                 }
 
-                //Thread 暂停
-                Thread.Sleep(1000);
+                //Task暂停
+                Task.Delay(1000);
             }
 
             LogManager.Info("板卡软重置成功");
@@ -53,36 +63,25 @@ public class Board
         }
     }
 
-    public void BoardHardReset()
-    {
-        try
-        {
-            // 重置板卡
-            LTDMC.dmc_board_reset();
-            BoardClose();
-            // 等15秒
-            Task.Delay(15000);
-            BoardInit();
-            LogManager.Info("板卡硬重置成功");
-        }
-        catch (Exception ex)
-        {
-            LogManager.Error($"板卡硬重置失败: {ex.Message}");
-        }
-    }
-
-
     public void BoardClose()
     {
         // 关闭板卡
         try
         {
-            LTDMC.dmc_board_close();
-            LogManager.Info("板卡关闭成功");
-        }
-        catch (Exception ex)
+            var result = LTDMC.dmc_board_close();
+            if (result == 0)
+            {
+                LogManager.Info("板卡关闭成功");
+            }
+            else
+            {
+                //其他错误码抛出异常
+                throw new Exception($"板卡关闭失败: {result}");
+            }
+        }catch (Exception ex)
         {
-            LogManager.Error($"关闭板卡失败: {ex.Message}");
+            LogManager.Error($"板卡关闭失败: {ex.Message}");
+            throw;
         }
     }
 }

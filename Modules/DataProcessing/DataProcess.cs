@@ -8,7 +8,7 @@ namespace SurfaceScan.Modules.DataProcessing;
 
 public class DataProcess
 {
-    public void CaculateCorrection()
+    public void CalculateCorrection()
     {
         // 处理反射峰值最大点 算曲面位置
         try
@@ -53,6 +53,15 @@ public class DataProcess
         //correction 
         return;
         // 计算相关性
+    }
+
+    public void CalculateScanPath()
+    {
+        //判断要饭谁点是不是空的。
+        List<Point> planPoint;
+       
+        
+
     }
 
   

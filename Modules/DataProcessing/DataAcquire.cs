@@ -23,8 +23,8 @@ public class DataAcquire
     public static List<List<Point>> ReflectionPointGroupList = new List<List<Point>>();
     public StateMachine DataAcquireStateMachine { get; set; }
 
-
-    public string SavePath { get; set; }
+   //需要修改
+    public string SavePath = "D:\\SurfaceScan\\Data\\";
 
 
     DataAcquire()
@@ -175,6 +175,9 @@ public class DataAcquire
             LogManager.Info("加载轨迹数据失败: " + ex.Message);
         }
     }
+    
+    
+    
     
   
 }

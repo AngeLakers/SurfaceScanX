@@ -328,7 +328,7 @@ public class Position : Base
     }
 
 
-    public void InitialPosition(List<double> positions)
+    public static void InitialPosition(List<double> positions)
     {
         try
         {

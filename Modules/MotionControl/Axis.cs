@@ -46,15 +46,15 @@ public class Axis : Base
         catch (Exception e)
         {
             LogManager.Error("启用所有轴失败: " + e.Message);
-            throw;
         }
-
-
-        SetEquiv(); // 设置轴的脉冲当量
+        var result =SetEquiv(); // 设置轴的脉冲当量
+        if (result ==false)
+        {
+            LogManager.Error("设置轴的脉冲当量失败");
+        }
         Position.GetPosition(MotionControl.AxisPositon);
     }
-
-    public static ushort MyAxis { get; set; }
+    
 
     public static void DisableAllAxes()
     {
@@ -66,8 +66,6 @@ public class Axis : Base
                 if (_errCode == 0)
                 {
                     LTDMC.nmc_set_axis_disable(CardNo, decimal.ToUInt16(i));
-
-                    LTDMC.nmc_get_axis_state_machine(CardNo, decimal.ToUInt16(i), ref _axisStateMachine);
                 }
                 else //总线不正常状态下不响应使能操作
                 {
@@ -92,8 +90,12 @@ public class Axis : Base
         // 可自定义reset哪个轴
         try
         {
-            LTDMC.dmc_set_position_unit(CardNo, decimal.ToUInt16(axis), 0);
-            LogManager.Info("重置轴位置为0成功");
+           var result=LTDMC.dmc_set_position_unit(CardNo, decimal.ToUInt16(axis), 0);
+           if (result != 0)
+           {
+               throw new Exception($"重置轴位置{axis}为失败: {result}");
+           }
+           LogManager.Info("重置轴位置为0成功");
         }
         catch (Exception e)
         {
@@ -133,8 +135,13 @@ public class Axis : Base
             // 停止所有轴
             for (int i = 0; i < MotionControl.TotalAxis; i++)
             {
-                LTDMC.dmc_stop(CardNo, decimal.ToUInt16(i), 0);
+                var result = LTDMC.dmc_stop(CardNo, decimal.ToUInt16(i), 0);
+                if (result != 0)
+                {
+                    throw new Exception($"停止轴{i}失败: {result}");
+                }
             }
+            
 
             LogManager.Info("停止所有轴成功");
         }
